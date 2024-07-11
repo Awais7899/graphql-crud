@@ -1,0 +1,21 @@
+type Record {
+  id: ID
+  name: String
+  quantity: Int
+  price: Int
+}
+
+type Query {
+  record(id:ID!): Record
+  records: [Record]
+}
+
+type Mutation {
+  createRecord(record : AddRecord!): Record
+  deleteRecord(id: ID!): Boolean
+  updateRecord(id: ID! name: String!, quantity: Int, price: Int): Record
+}
+
+input AddRecord {
+    name: String!, quantity: Int!, price: Int!
+}
