@@ -16,38 +16,43 @@ const resolvers = {
     id: (parent) => parent.id ?? parent._id,
   },
   Mutation: {
-    async createRecord(_, args, context) {
-      let collection = await Product;
-      let record = {
-        ...args.record, 
-        id : 
+    async createRecord(_, { record }, context) {
+      try {
+        const newRecord = new Product({
+          ...record,
+          id: Math.random().toString(36), // Generating a unique id
+        });
+        const result = await newRecord.save();
+        return {
+          id: result._id,
+          name: result.name,
+          quantity: result.quantity,
+          price: result.price,
+        };
+      } catch (error) {
+        console.error(error);
+        throw new Error("Error creating record");
       }
-      const insert = await collection.create(args.record);
-      console.warn(insert);
-      if (insert.acknowledged)
-        return { args };
-      return null;
     },
     async updateRecord(_, args, context) {
-      const id = new ObjectId(args.id);
-      let query = { _id: new ObjectId(id) };
-      let collection = await Product;
-      const update = await collection.updateOne(
-        query,
-        { $set: { ...args } }
-      );
-
-      if (update.acknowledged)
-        return await collection.findOne(query);
-
-      return null;
+      try {
+        const result = await Product.findByIdAndUpdate(args.id , {
+          name: args.name, 
+          price: args.price, 
+          quantity: args.quantity
+        } , {new : true});
+        return {
+          id: result._id,
+          name: result.name,
+          quantity: result.quantity,
+          price: result.price,
+        };
+      } catch (error) {
+        console.error(error);
+        throw new Error("Error updated --- record");
+      }
     },
-    async deleteRecord(_, { id }, context) {
-      let collection = await Product;
-      const dbDelete = await collection.deleteOne({ _id: new ObjectId(id) });
-      return dbDelete.acknowledged && dbDelete.deletedCount == 1 ? true : false;
-    },
-  },
+  }
 };
 
 export default resolvers;
